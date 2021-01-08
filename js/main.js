@@ -12,6 +12,11 @@ const treeSortable = {
 	options: {
 		depth: 30,
 		treeSelector: '#tree',
+		branchSelector: '.tree-branch',
+		dragHandlerSelector: '.branch-drag-handler',
+		placeholderName: 'sortable-placeholder',
+		childrenBusSelector: '.children-bus',
+		levelPrefix: 'branch-level-',
 		maxLevel: 10,
 	},
 	run() {
@@ -29,6 +34,7 @@ const treeSortable = {
 	},
 	jQuerySupplements() {
 		const { options } = treeSortable;
+		const { levelPrefix } = options;
 		$.fn.extend({
 			getBranchLevel() {
 				if ($(this).length === 0) return 0;
@@ -44,8 +50,8 @@ const treeSortable = {
 				return this.each(function () {
 					prev = prev || $(this).getBranchLevel() || 1;
 					$(this)
-						.removeClass('branch-level-' + prev)
-						.addClass('branch-level-' + current);
+						.removeClass(levelPrefix + prev)
+						.addClass(levelPrefix + current);
 				});
 			},
 			shiftBranchLevel(dx) {
@@ -53,30 +59,36 @@ const treeSortable = {
 					let level = $(this).getBranchLevel() || 1,
 						newLevel = level + dx;
 					$(this)
-						.removeClass('branch-level-' + level)
-						.addClass('branch-level-' + newLevel);
+						.removeClass(levelPrefix + level)
+						.addClass(levelPrefix + newLevel);
 				});
 			},
 			getParent() {
+				const {
+					options: { branchSelector },
+				} = treeSortable;
 				const level = $(this).getBranchLevel() || 1;
-				let $prev = $(this).prev('.tree-branch');
+				let $prev = $(this).prev(branchSelector);
 
 				while ($prev.length && $prev.getBranchLevel() >= level) {
-					$prev = $prev.prev('.tree-branch');
+					$prev = $prev.prev(branchSelector);
 				}
 
 				return $prev;
 			},
 			getChildren() {
+				const {
+					options: { branchSelector },
+				} = treeSortable;
 				let $children = $();
 
 				this.each(function () {
 					let level = $(this).getBranchLevel() || 1,
-						$next = $(this).next('.tree-branch');
+						$next = $(this).next(branchSelector);
 
 					while ($next.length && $next.getBranchLevel() > level) {
 						$children = $children.add($next);
-						$next = $next.next('.tree-branch');
+						$next = $next.next(branchSelector);
 					}
 				});
 
@@ -89,24 +101,30 @@ const treeSortable = {
 				return $(this).prev();
 			},
 			nextSibling() {
+				const {
+					options: { branchSelector },
+				} = treeSortable;
 				let level = $(this).getBranchLevel() || 1,
-					$next = $(this).next('.tree-branch'),
+					$next = $(this).next(branchSelector),
 					nextLevel = $next.getBranchLevel();
 
 				while ($next.length && nextLevel > level) {
-					$next = $next.next('.tree-branch');
+					$next = $next.next(branchSelector);
 					nextLevel = $next.getBranchLevel();
 				}
 
 				return nextLevel === level ? $next : $();
 			},
 			prevSibling() {
+				const {
+					options: { branchSelector },
+				} = treeSortable;
 				let level = $(this).getBranchLevel() || 1,
-					$prev = $(this).prev('.tree-branch'),
+					$prev = $(this).prev(branchSelector),
 					prevLevel = $prev.getBranchLevel();
 
 				while ($prev.length && prevLevel > level) {
-					$prev = $prev.prev('.tree-branch');
+					$prev = $prev.prev(branchSelector);
 					prevLevel = $prev.getBranchLevel();
 				}
 
@@ -116,14 +134,18 @@ const treeSortable = {
 	},
 	initSorting() {
 		const { options, pxToNumber, numberToPx } = treeSortable;
-		const { treeSelector } = options;
+		const {
+			treeSelector,
+			dragHandlerSelector,
+			placeholderName,
+			childrenBusSelector,
+		} = options;
 
 		/** Store the current level, for sorting the item after stop dragging. */
 		let currentLevel = 1,
 			originalLevel = 1,
 			childrenBus = null,
-			helperHeight = 0,
-			changed = false;
+			helperHeight = 0;
 
 		/** Update the placeholder branch level by new level. */
 		const updatePlaceholder = (placeholder, level) => {
@@ -143,8 +165,8 @@ const treeSortable = {
 		};
 
 		$(treeSelector).sortable({
-			handle: '.branch-drag-handler',
-			placeholder: 'sortable-placeholder',
+			handle: dragHandlerSelector,
+			placeholder: placeholderName,
 			items: '> *',
 			start(_, ui) {
 				/**
@@ -158,7 +180,7 @@ const treeSortable = {
 				originalLevel = level;
 
 				/** Fill the children bus with the children. */
-				childrenBus = ui.item.find('.children-bus');
+				childrenBus = ui.item.find(childrenBusSelector);
 				childrenBus.append(ui.item.next().getChildren());
 
 				/**
@@ -174,7 +196,7 @@ const treeSortable = {
 				height -= 2;
 
 				let width =
-					ui.helper.find('.branch-drag-handler').outerWidth() - 2;
+					ui.helper.find(dragHandlerSelector).outerWidth() - 2;
 				ui.placeholder.css({ height, width });
 
 				const tmp = ui.placeholder.nextBranch();
@@ -260,12 +282,14 @@ const treeSortable = {
 				 * changed boundary.
 				 */
 				let prevBranchLevel = prevBranch.getBranchLevel() || 1;
-				ui.placeholder.detach();
-				let children = prevBranch.getChildren();
-				if (children && children.length) prevBranchLevel += 1;
-				prevBranch.after(ui.placeholder);
 
-				ui.placeholder.updateBranchLevel(prevBranchLevel);
+				if (prevBranch.length) {
+					ui.placeholder.detach();
+					let children = prevBranch.getChildren();
+					if (children && children.length) prevBranchLevel += 1;
+					prevBranch.after(ui.placeholder);
+					ui.placeholder.updateBranchLevel(prevBranchLevel);
+				}
 			},
 			stop(_, ui) {
 				/**
