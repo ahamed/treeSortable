@@ -234,13 +234,18 @@ const treeSortable = {
 				let newLevel = Math.floor(position / depth) + 1;
 				newLevel = Math.max(lowerBound, Math.min(newLevel, upperBound));
 
-				/** Update the placeholder position by the changed level. */
-				updatePlaceholder(ui.placeholder, newLevel);
-
 				if (canSwapItems(ui)) {
-					ui.placeholder.nextBranch().after(ui.placeholder);
+					let nextBranch = ui.placeholder.nextBranch();
+					if (nextBranch.getChildren().length) {
+						newLevel = nextBranch.getBranchLevel() + 1;
+					}
+
+					nextBranch.after(ui.placeholder);
 					$(this).sortable('refreshPositions');
 				}
+
+				/** Update the placeholder position by the changed level. */
+				updatePlaceholder(ui.placeholder, newLevel);
 			},
 			change(_, ui) {
 				let prevBranch = ui.placeholder.prevBranch();
