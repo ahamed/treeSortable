@@ -8,7 +8,7 @@
 
 var $ = jQuery;
 
-const treeSortable = {
+var treeSortable = {
 	options: {
 		depth: 30,
 		treeSelector: '#tree',
@@ -16,12 +16,13 @@ const treeSortable = {
 		dragHandlerSelector: '.branch-drag-handler',
 		placeholderName: 'sortable-placeholder',
 		childrenBusSelector: '.children-bus',
-		levelPrefix: 'branch-level-',
+		levelPrefix: 'branch-level',
 		maxLevel: 10,
 	},
 	run() {
 		this.jQuerySupplements();
 		this.initSorting();
+		console.log($(treeSortable.options.treeSelector).offset());
 	},
 	getTreeEdge() {
 		return $(treeSortable.options.treeSelector).offset().left;
@@ -50,8 +51,8 @@ const treeSortable = {
 				return this.each(function () {
 					prev = prev || $(this).getBranchLevel() || 1;
 					$(this)
-						.removeClass(levelPrefix + prev)
-						.addClass(levelPrefix + current);
+						.removeClass(levelPrefix + '-' + prev)
+						.addClass(levelPrefix + '-' + current);
 				});
 			},
 			shiftBranchLevel(dx) {
@@ -59,8 +60,8 @@ const treeSortable = {
 					let level = $(this).getBranchLevel() || 1,
 						newLevel = level + dx;
 					$(this)
-						.removeClass(levelPrefix + level)
-						.addClass(levelPrefix + newLevel);
+						.removeClass(levelPrefix + '-' + level)
+						.addClass(levelPrefix + '-' + newLevel);
 				});
 			},
 			getParent() {
@@ -75,6 +76,15 @@ const treeSortable = {
 				}
 
 				return $prev;
+			},
+			getRootChildren() {
+				const {
+					options: { branchSelector, treeSelector, levelPrefix },
+				} = treeSortable;
+
+				return $(treeSelector).children(
+					`${branchSelector}.${levelPrefix}-1`
+				);
 			},
 			getChildren() {
 				const {
@@ -104,6 +114,7 @@ const treeSortable = {
 				const {
 					options: { branchSelector },
 				} = treeSortable;
+
 				let level = $(this).getBranchLevel() || 1,
 					$next = $(this).next(branchSelector),
 					nextLevel = $next.getBranchLevel();
@@ -145,7 +156,8 @@ const treeSortable = {
 		let currentLevel = 1,
 			originalLevel = 1,
 			childrenBus = null,
-			helperHeight = 0;
+			helperHeight = 0,
+			originalIndex = 0;
 
 		/** Update the placeholder branch level by new level. */
 		const updatePlaceholder = (placeholder, level) => {
@@ -175,6 +187,7 @@ const treeSortable = {
 				 */
 				const level = ui.item.getBranchLevel();
 				ui.placeholder.updateBranchLevel(level);
+				originalIndex = ui.item.index();
 
 				/**  Store the original level. */
 				originalLevel = level;
@@ -237,12 +250,21 @@ const treeSortable = {
 				 * the maximum value between the
 				 * Next Sibling Level and 1
 				 */
-				let nextSibling = ui.placeholder.nextSibling();
+				let nextSibling = ui.placeholder.nextSibling(),
+					placeholderLevel = 1;
 
 				if (nextSibling.length) {
-					let placeholderLevel = ui.placeholder.getBranchLevel() || 1;
-					lowerBound = Math.max(1, placeholderLevel);
+					placeholderLevel = ui.placeholder.getBranchLevel() || 1;
+				} else {
+					/**
+					 * If no sibling found then
+					 * the placeholder level would be the next branch's level.
+					 */
+					let nextBranch = ui.placeholder.nextBranch();
+					placeholderLevel = nextBranch.getBranchLevel() || 1;
 				}
+
+				lowerBound = Math.max(1, placeholderLevel);
 
 				/**
 				 * Calculate the position which is the current helper offset left
@@ -258,6 +280,7 @@ const treeSortable = {
 
 				if (canSwapItems(ui)) {
 					let nextBranch = ui.placeholder.nextBranch();
+
 					if (nextBranch.getChildren().length) {
 						newLevel = nextBranch.getBranchLevel() + 1;
 					}
@@ -287,8 +310,8 @@ const treeSortable = {
 					ui.placeholder.detach();
 					let children = prevBranch.getChildren();
 					if (children && children.length) prevBranchLevel += 1;
-					prevBranch.after(ui.placeholder);
 					ui.placeholder.updateBranchLevel(prevBranchLevel);
+					prevBranch.after(ui.placeholder);
 				}
 			},
 			stop(_, ui) {
@@ -302,6 +325,13 @@ const treeSortable = {
 				/** Update the item by currently changed level. */
 				ui.item.updateBranchLevel(currentLevel);
 				children.shiftBranchLevel(currentLevel - originalLevel);
+
+				if (
+					currentLevel !== originalLevel ||
+					originalIndex !== ui.item.index()
+				) {
+					$(document).trigger('sortCompleted', [ui]);
+				}
 			},
 		});
 	},
