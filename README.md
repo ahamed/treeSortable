@@ -1,6 +1,7 @@
 # Tree Sortable
 A drag and drop list item sorting and level changing library. 
-![video](https://user-images.githubusercontent.com/5783354/163627179-f709c5ad-5b0e-4ccf-b819-d0ccb240ba63.mov)
+
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/5783354/163627626-c06e2917-6dda-4d9e-a819-f50862ccc660.gif)
 
 ## Motivation
 The `jQuery-ui's` sortable plugin allows us to sort items vertically or horizontally. But sometimes we need some items to make a child of another item and also need to sort a parent with all of the children items.
