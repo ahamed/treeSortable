@@ -31,18 +31,18 @@ function TreeSortable() {
     var treeSortable = {
         options: {
             depth: 30,
-            treeSelector: "#tree",
-            branchSelector: ".tree-branch",
-            branchPathSelector: ".branch-path",
-            dragHandlerSelector: ".branch-drag-handler",
-            placeholderName: "sortable-placeholder",
-            childrenBusSelector: ".children-bus",
-            levelPrefix: "branch-level",
+            treeSelector: '#tree',
+            branchSelector: '.tree-branch',
+            branchPathSelector: '.branch-path',
+            dragHandlerSelector: '.branch-drag-handler',
+            placeholderName: 'sortable-placeholder',
+            childrenBusSelector: '.children-bus',
+            levelPrefix: 'branch-level',
             maxLevel: 10,
             dataAttributes: {
-                id: "id",
-                parent: "parent",
-                level: "level",
+                id: 'id',
+                parent: 'parent',
+                level: 'level',
             },
         },
         run() {
@@ -51,7 +51,7 @@ function TreeSortable() {
         },
 
         cleanSelector(selector) {
-            return selector.replace(/^[\.#]/g, "");
+            return selector.replace(/^[\.#]/g, '');
         },
 
         getInstance() {
@@ -62,19 +62,19 @@ function TreeSortable() {
             return $(treeSortable.options.treeSelector).offset().left;
         },
         pxToNumber(str) {
-            return new RegExp("px$", "i").test(str) ? str.slice(0, -2) * 1 : 0;
+            return new RegExp('px$', 'i').test(str) ? str.slice(0, -2) * 1 : 0;
         },
         numberToPx(num) {
             return `${num}px`;
         },
         onSortCompleted(callback) {
-            $(document).on("sortCompleted", callback);
+            $(document).on('sortCompleted', callback);
         },
 
         generateUUID() {
-            return "xxxxxxxx-xxx".replace(/[xy]/g, function (c) {
+            return 'xxxxxxxx-xxx'.replace(/[xy]/g, function (c) {
                 var r = (Math.random() * 16) | 0,
-                    v = c == "x" ? r : (r & 0x3) | 0x8;
+                    v = c == 'x' ? r : (r & 0x3) | 0x8;
                 return v.toString(16);
             });
         },
@@ -86,10 +86,11 @@ function TreeSortable() {
                     dragHandlerSelector,
                     childrenBusSelector,
                     levelPrefix,
-                    dataAttributes: { idAttr, parentAttr, level: levelAttr },
+                    dataAttributes: { id: idAttr, parent: parentAttr, level: levelAttr },
                 },
                 cleanSelector,
             } = treeSortable;
+
             return `
 		<li class="${cleanSelector(
             branchSelector
@@ -130,7 +131,7 @@ function TreeSortable() {
                     if ($(this).length === 0) return 0;
 
                     const { depth } = options;
-                    const margin = $(this).css("margin-left");
+                    const margin = $(this).css('margin-left');
 
                     return /(px)|(em)|(rem)$/i.test(margin)
                         ? Math.floor(margin.slice(0, -2) / depth) + 1
@@ -140,8 +141,8 @@ function TreeSortable() {
                     return this.each(function () {
                         prev = prev || $(this).getBranchLevel() || 1;
                         $(this)
-                            .removeClass(levelPrefix + "-" + prev)
-                            .addClass(levelPrefix + "-" + current)
+                            .removeClass(levelPrefix + '-' + prev)
+                            .addClass(levelPrefix + '-' + current)
                             .data(dataAttributes.level, current)
                             .attr(`data-${dataAttributes.level}`, current);
                     });
@@ -152,8 +153,8 @@ function TreeSortable() {
                             newLevel = level + dx;
 
                         $(this)
-                            .removeClass(levelPrefix + "-" + level)
-                            .addClass(levelPrefix + "-" + newLevel)
+                            .removeClass(levelPrefix + '-' + level)
+                            .addClass(levelPrefix + '-' + newLevel)
                             .data(dataAttributes.level, newLevel)
                             .attr(`data-${dataAttributes.level}`, newLevel);
                     });
@@ -309,7 +310,7 @@ function TreeSortable() {
                         const level = $(this).getBranchLevel() || 1;
                         $(this).find(branchPathSelector).show();
 
-                        if (typeof $(this).nextSibling !== "function") return;
+                        if (typeof $(this).nextSibling !== 'function') return;
 
                         if (level > 1) {
                             const $sibling = $(this).nextSibling();
@@ -323,7 +324,7 @@ function TreeSortable() {
                                 const distance = getDistance($(this).get(0), $sibling.get(0));
                                 $sibling
                                     .find(branchPathSelector)
-                                    .css("height", `${Math.max(distance.distanceY + 8, 55)}px`);
+                                    .css('height', `${Math.max(distance.distanceY + 8, 55)}px`);
                             } else {
                                 /**
                                  * If no sibling exists to a branch then find the child.
@@ -335,7 +336,7 @@ function TreeSortable() {
                                 const isChild = $nextBranch.length > 0 && nextBranchLevel > level;
 
                                 if (isChild) {
-                                    $nextBranch.find(branchPathSelector).css("height", "55px");
+                                    $nextBranch.find(branchPathSelector).css('height', '55px');
                                 }
                             }
                         } else {
@@ -359,13 +360,13 @@ function TreeSortable() {
                     $branch = $(this).closest(`${treeSelector} ${branchSelector}`);
 
                     if (!$branch.length) {
-                        throw Error("Invalid selector! Make sure that your add child button is inside a branch.");
+                        throw Error('Invalid selector! Make sure that your add child button is inside a branch.');
                     }
 
                     const uid = generateUUID();
                     const parent_id = $branch.data(id);
                     const level = Math.min(maxLevel, parseInt($branch.getBranchLevel()) + 1);
-                    const title = "New Branch " + uid;
+                    const title = 'New Branch ' + uid;
 
                     $lastChild = $branch.getLastChild();
 
@@ -397,7 +398,7 @@ function TreeSortable() {
                     const uid = generateUUID();
                     const parent_id = $branch.data(parent);
                     const level = $branch.getBranchLevel();
-                    const title = "New Branch " + uid;
+                    const title = 'New Branch ' + uid;
                     const $lastSibling = $branch.getLastSibling();
                     let $lastChild = $lastSibling.getLastChild();
 
@@ -451,7 +452,7 @@ function TreeSortable() {
 
             $branches.length &&
                 $branches.each(function (index) {
-                    $(this).css("z-index", Math.max(1, length - index));
+                    $(this).css('z-index', Math.max(1, length - index));
                 });
         },
         initSorting() {
@@ -500,7 +501,7 @@ function TreeSortable() {
             $(treeSelector).sortable({
                 handle: dragHandlerSelector,
                 placeholder: placeholderName,
-                items: "> *",
+                items: '> *',
                 start(_, ui) {
                     /** Synchronize the placeholder level with the item's level. */
                     const level = ui.item.getBranchLevel();
@@ -519,7 +520,7 @@ function TreeSortable() {
                      * helper's width & height respectively.
                      */
                     let height = childrenBus.outerHeight();
-                    let placeholderMarginTop = ui.placeholder.css("margin-top");
+                    let placeholderMarginTop = ui.placeholder.css('margin-top');
 
                     height += height > 0 ? pxToNumber(placeholderMarginTop) : 0;
                     height += ui.helper.outerHeight();
@@ -530,11 +531,11 @@ function TreeSortable() {
                     ui.placeholder.css({ height, width });
 
                     const tmp = ui.placeholder.nextBranch();
-                    tmp.css("margin-top", numberToPx(helperHeight));
+                    tmp.css('margin-top', numberToPx(helperHeight));
                     ui.placeholder.detach();
-                    $(this).sortable("refresh");
+                    $(this).sortable('refresh');
                     ui.item.after(ui.placeholder);
-                    tmp.css("margin-top", 0);
+                    tmp.css('margin-top', 0);
 
                     // Set the current level by the initial item's level.
                     currentLevel = level;
@@ -601,7 +602,7 @@ function TreeSortable() {
                         }
 
                         nextBranch.after(ui.placeholder);
-                        $(this).sortable("refreshPositions");
+                        $(this).sortable('refreshPositions');
                     }
 
                     /** Update the placeholder position by the changed level. */
@@ -645,7 +646,7 @@ function TreeSortable() {
                      * i.e. if the items sorted then trigger the event.
                      */
                     if (currentLevel !== originalLevel || originalIndex !== ui.item.index()) {
-                        $(document).trigger("sortCompleted", [ui]);
+                        $(document).trigger('sortCompleted', [ui]);
                     }
 
                     // Calculate the sibling distance after sorting
