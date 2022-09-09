@@ -322,8 +322,8 @@ function TreeSortable() {
                              */
                             if ($sibling.length) {
                                 const distance = getDistance($(this).get(0), $sibling.get(0));
-                                var ThisParent=$(this).getParent()?$(this).getParent():$(this).getRootChild()
-                                const distance2 = getDistance($(this).get(0), ThisParent.get(0));
+                                const thisParent = $(this).getParent() || $(this).getRootChild()
+                                const parentDistance = getDistance($(this).get(0), thisParent.get(0));
 
                                 $sibling
                                     .find(branchPathSelector)
@@ -345,13 +345,13 @@ function TreeSortable() {
                                     $nextBranch.find(branchPathSelector).css('height', '55px');                               
                                 }                             
                                 if ($nextBranch.length > 0 && nextBranchLevel < level){
-                                    if ( $(this).prevBranch().getBranchLevel() <= level  ) {
-                                    $(this).find(branchPathSelector).css('height', '72px');                                 
+                                    if ($(this).prevBranch().getBranchLevel() <= level) {
+                                        $(this).find(branchPathSelector).css('height', '72px');                                 
                                     }                      
                                 }
-                                if ( $(this).prevBranch().getBranchLevel() < level  ) {
+                                if ($(this).prevBranch().getBranchLevel() < level) {
                                     $(this).find(branchPathSelector).css('height', '72px');                                   
-                                    }
+                                }
                             }
                         }else {
                             $(this).find(branchPathSelector).hide();
