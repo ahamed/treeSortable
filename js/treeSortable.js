@@ -322,24 +322,38 @@ function TreeSortable() {
                              */
                             if ($sibling.length) {
                                 const distance = getDistance($(this).get(0), $sibling.get(0));
+                                var ThisParent=$(this).getParent()?$(this).getParent():$(this).getRootChild()
+                                const distance2 = getDistance($(this).get(0), ThisParent.get(0));
+
                                 $sibling
                                     .find(branchPathSelector)
                                     .css('height', `${Math.max(distance.distanceY + 8, 55)}px`);
+                                     $(this).find(branchPathSelector)
+                                    .css('height', `${Math.max(distance2.distanceY + 8, 55)}px`);
                             } else {
                                 /**
                                  * If no sibling exists to a branch then find the child.
                                  * If child exists then set the child height as the default 55px.
                                  */
                                 const $nextBranch = $(this).next(branchSelector);
-                                const nextBranchLevel = $nextBranch.getBranchLevel() || 1;
+                                const nextBranchLevel = $nextBranch.getBranchLevel() || 1;                    
+
 
                                 const isChild = $nextBranch.length > 0 && nextBranchLevel > level;
 
                                 if (isChild) {
-                                    $nextBranch.find(branchPathSelector).css('height', '55px');
+                                    $nextBranch.find(branchPathSelector).css('height', '55px');                               
+                                }                             
+                                if ($nextBranch.length > 0 && nextBranchLevel < level){
+                                    if ( $(this).prevBranch().getBranchLevel() <= level  ) {
+                                    $(this).find(branchPathSelector).css('height', '72px');                                 
+                                    }                      
                                 }
+                                if ( $(this).prevBranch().getBranchLevel() < level  ) {
+                                    $(this).find(branchPathSelector).css('height', '72px');                                   
+                                    }
                             }
-                        } else {
+                        }else {
                             $(this).find(branchPathSelector).hide();
                         }
                     });
