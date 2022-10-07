@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const data = [
+    const dataLeft = [
         {
             id: 1,
             parent_id: 0,
@@ -62,13 +62,41 @@ $(document).ready(function () {
         },
     ];
 
-    const sortable = new TreeSortable();
+    const dataRight = [
+        {
+            id: 1,
+            parent_id: 0,
+            title: 'Item 1',
+            level: 1,
+        },
+        {
+            id: 2,
+            parent_id: 1,
+            title: 'Item 4',
+            level: 2,
+        },
+        {
+            id: 3,
+            parent_id: 0,
+            title: 'Item 2',
+            level: 1,
+        },
+        {
+            id: 4,
+            parent_id: 3,
+            title: 'Item 3',
+            level: 2,
+        },
+    ];
 
-    const $tree = $('#tree');
-    const $content = data.map(sortable.createBranch);
-
-    $tree.html($content);
-    sortable.run();
+    const leftTreeId = '#left-tree';
+    const leftSortable = new TreeSortable({
+        treeSelector: leftTreeId,
+    });
+    const $leftTree = $(leftTreeId);
+    const $content = dataLeft.map(leftSortable.createBranch);
+    $leftTree.html($content);
+    leftSortable.run();
 
     const delay = () => {
         return new Promise(resolve => {
@@ -78,29 +106,50 @@ $(document).ready(function () {
         });
     };
 
-    sortable.onSortCompleted(async (event, ui) => {
+    leftSortable.onSortCompleted(async (event, ui) => {
         await delay();
-        console.log(ui.item);
+        console.log('left tree', ui.item);
     });
 
-    $(document).on('click', '.add-child', function (e) {
-        e.preventDefault();
-        $(this).addChildBranch();
+    leftSortable.addListener('click', '.add-child', function (event, instance) {
+        event.preventDefault();
+        instance.addChildBranch($(event.target));
     });
 
-    $(document).on('click', '.add-sibling', function (e) {
-        e.preventDefault();
-        $(this).addSiblingBranch();
+    leftSortable.addListener('click', '.add-sibling', function (event, instance) {
+        event.preventDefault();
+        instance.addSiblingBranch($(event.target));
     });
 
-    $(document).on('click', '.remove-branch', function (e) {
-        e.preventDefault();
+    leftSortable.addListener('click', '.remove-branch', function (event, instance) {
+        event.preventDefault();
 
         const confirm = window.confirm('Are you sure you want to delete this branch?');
         if (!confirm) {
             return;
         }
-
-        $(this).removeBranch();
+        instance.removeBranch($(this));
     });
+
+    const rightTreeId = '#right-tree';
+    const rightSortable = new TreeSortable({
+        treeSelector: rightTreeId,
+    });
+    const $rightTree = $(rightTreeId);
+    const $rightContent = dataRight.map(rightSortable.createBranch);
+    $rightTree.html($rightContent);
+    rightSortable.run();
+    rightSortable.onSortCompleted(async (event, ui) => {
+        await delay();
+        console.log('right tree', ui.item);
+    });
+
+    rightSortable.addListener('click', '.add-child', function (event, instance) {
+        instance.addChildBranch($(event.target));
+    });
+    rightSortable.addListener('click', '.add-sibling', function (event, instance) {
+        instance.addSiblingBranch($(event.target));
+    });
+
+    tippy('[data-tippy-content]');
 });

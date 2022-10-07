@@ -1,0 +1,22 @@
+.b-tooltip {
+    border: 3px solid #fff;
+    display: inline-block;
+    font-size: 0.875em;
+    padding: 0.75em;
+    position: absolute;
+    text-align: center;
+    z-index: 999999;
+}
+.b-tooltip-light {
+    background: #eaeaea;
+    color: #242424;
+}
+.b-tooltip-dark {
+    background: #000;
+    color: #fff;
+}
+
+.wrap {
+    margin: 0 auto;
+    width: 800px;
+}

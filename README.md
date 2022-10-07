@@ -8,13 +8,33 @@ The `jQuery-ui's` sortable plugin allows us to sort items vertically or horizont
 This is the reason why I've created this library for managing the parent-children relationship of list items and fully by drag and drop.
 
 ## Installation
-Download the `treeSortable.js` and `treeSortable.css` files and add the `treeSortable.js` file before the `</body>` tag.
-Note that include the `treeSortable.js` file after `jquery` and the `jquery-ui` scripts. Include the `treeSortable.css` stylesheet in the head section. For reference see the `index.html` file.
+Download the required files from the [Github](https://github.com/ahamed/treeSortable/archive/refs/heads/master.zip). Use the `treeSortable.js` and `treeSortable.css` files to your project.
+You also need to use `jQuery` and `jQuery-ui` libraries.
 
+In the `<head>` tag use the css files.
+```html
+<link href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" rel="stylesheet" type="text/css" />
+<link href="/path/to/treeSortable.css" rel="stylesheet" />
+```
+
+Before the `</body>` tag
+```html
+<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="/path/to/treeSortable.js"></script>
+```
+
+---
 
 ## Usage
-Create a `ul` element with the ID `tree`. If you want to use other ID instead of `tree` then you have to update the design of `treeSortable.css` file or need to write your own stylesheet.
-Add a `<script>` tag after `treeSortable.js` script. You could add the HTML content for the branches inside the `ul` element, but I prefer to create an array of branches.
+Create a `ul` element with some ID attribute.
+
+```html
+<ul id="tree"></ul>
+```
+
+Then generate an array of object with the exact structure defined below.
+In the data structure the ordering is important, the tree will be rendered according to this order.
 
 ```js
 const data = [
@@ -36,37 +56,29 @@ const data = [
 ]
 ```
 
-Make sure the data is in a perfect parent-child relationship. And level must be accurate.
-
-After create an instance of the `TreeSortable` object and create the **Tree Branch**.
+Now we are gonna create an instance of the tree sortable. And we can pass an options object as the constructor of the `TreeSortable`.
 
 
 ```js
-const sortable = new TreeSortable();
+const sortable = new TreeSortable({
+	treeSelector: '#tree'
+});
+```
 
-// Creating the branch contents.
+Now create the HTML content of the tree from the `data` we've declared earlier, and append the `$content` to the `<ul>` element.
+```js
 const $content = data.map(sortable.createBranch);
-
-// Append the content as children of the `#tree` ul element
 $('#tree').html($content);
+```
 
-// Finally run the sortable functionalities.
+Finally, run the sortable for making it interactive.
+
+```js
 sortable.run();
 ```
 
-That's all. Your sortable tree is interactive. Now you can change the order of the tree branch and can change the level of the branch as well.
-
 ## Change sortable options
-You can change sortable options for farther customizations. For changing the options you need to update the `sortable.options` object before calling the `sortable.run()` function.
-
-
-branchSelector: ".tree-branch",
-branchPathSelector: ".branch-path",
-dragHandlerSelector: ".branch-drag-handler",
-placeholderName: "sortable-placeholder",
-childrenBusSelector: ".children-bus",
-levelPrefix: "branch-level",
-maxLevel: 10,
+You can pass customized options to the sortable while instantiating the function. All the options has the default values.
 
 ## Options
 | Option | Default | Description |
@@ -84,17 +96,15 @@ maxLevel: 10,
 
 For updating the options you could do-
 ```js
-sortable.options = {
-	...sortable.options,
-	branchSelector: '#otherTree',
-	branchPathSelector: '.other-path',
-	maxLevel: 2,
-	depth: 40
-}
-
-// Then run the sortable
-sortable.run();
+const sortable = new TreeSortable({
+	treeSelector: '#someUlId',
+	branchSelector: '.some-branch-class-name',
+	depth: 20,
+	...
+})
 ```
+
+>Note: If you change the class selectors like `branchSelector`, `branchPathSelector` etc then you have to take care of the CSS design accordingly.
 
 
 ## Event
@@ -117,48 +127,45 @@ sortable.onSortCompleted(async function(event, ui) {
 ```
 
 ## Add child, Add sibling, delete branch.
-You can add child branch or a sibling branch. Also you can delete a branch recursively. There are some functions attached to the branch element.
-The `sortable.createBranch(data)` function come with few action buttons with the branch at the right hand side. The first one is for creating a new child branch,
-the next one for creating a new sibling branch and last one is for deleting a branch recursively.
+There are some functions provided to the library for adding child branch, sibling branch or delete branches recursively.
+The `sortable` instance provides you an event listener that gives you the ability to attach any event listener for a specific instance.
+This is basically a wrapper function of the original jQuery's event listener but this is more `TreeSortable` instance specific.
 
-You could attach click event to the respective buttons for adding child/sibling and/or deleting branch. Note that the events must need to be attached on the `document` and 
-implement the event delegation.
+
 
 ```js
-$(document).on('click', '.add-child', function(event) {
+sortable.addListener('click', '.add-child', function (event, instance) {
 	event.preventDefault();
-	$(this).addChildBranch();
+	instance.addChildBranch($(event.target));
 });
 ```
 
 For adding sibling-
 
 ```js
-$(document).on('click', '.add-sibling', function(event) {
+sortable.addListener('click', '.add-child', function (event, instance) {
 	event.preventDefault();
-	$(this).addSiblingBranch();
+	instance.addSiblingBranch($(event.target));
 });
 ```
 
 For deleting branch-
 
 ```js
-$(document).on('click', '.add-sibling', function(event) {
+sortable.addListener('click', '.remove-branch', function (event, instance) {
 	event.preventDefault();
 
-	// You could check the user consent before deleting branch.
-	const confirm = window.confirm('Are you sure to delete the branch?');
-	
+	const confirm = window.confirm('Are you sure you want to delete this branch?');
 	if (!confirm) {
-		return;
+			return;
 	}
-
-	$(this).removeBranch();
+	instance.removeBranch($(this));
 });
 ```
 
 ## Contribution
 If you find any issues please raise issue on github. Also if you want to contribute the plugin then create a PR.
-You can also contact with me at `sajeeb07ahamed@gmail.com`.
+This library is fully functional if your data structure satisfied the described situation. But this may not be perfect for some other situation.
+If you need any customization then ping me on `sajeeb07ahamed@gmail.com`.
 
 
