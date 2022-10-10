@@ -464,6 +464,8 @@ function TreeSortable(options) {
 
         $branch.remove();
         self.updateBranchZIndex();
+        self.branchesLeftShifting();
+        $(treeSelector).calculateSiblingDistances();
     };
 
     this.updateBranchZIndex = function () {

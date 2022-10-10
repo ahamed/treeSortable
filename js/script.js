@@ -128,7 +128,7 @@ $(document).ready(function () {
         if (!confirm) {
             return;
         }
-        instance.removeBranch($(this));
+        instance.removeBranch($(event.target));
     });
 
     const rightTreeId = '#right-tree';
